@@ -1,8 +1,14 @@
-const greet = (name: string): string => `Hello, ${name}!`;
+import { readFile } from 'node:fs/promises';
 
-const nums: number[] = [1, 2, 3, 4];
+// * ------------------------ HELPERS ------------------------ * //
+const readInput = async (): Promise<string> =>
+	await readFile('input.txt', { encoding: 'utf8' });
 
-const double = (value: number): number => value * 2;
+const getLineArray = (input: string): string[] => input.split('\n');
 
-console.log(greet('Mike'));
-console.log(nums.map(double));
+// * ------------------------  MAIN   ------------------------ * //
+
+const rawInput = await readInput();
+
+const array = getLineArray(rawInput);
+console.log('array', array);
