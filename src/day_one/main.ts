@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readInputFile } from '@/utils/readInputFile.js';
 
 // * ------------------------   ENV   ------------------------ * //
 const DIAL_STARTING_VALUE = 50;
@@ -227,9 +227,6 @@ class SafeDial {
 }
 
 // * ------------------------ HELPERS ------------------------ * //
-const readInputFile = async (): Promise<string> =>
-	await readFile('input.txt', { encoding: 'utf8' });
-
 const getArrayFromLines = (input: string): string[] => input.split('\n');
 
 // * ------------------------  MAIN   ------------------------ * //
@@ -238,7 +235,7 @@ const getSafeDoorPassword = async (): Promise<{
 	anyClickPassword: number;
 	finalClickPassword: number;
 }> => {
-	const rawInput = await readInputFile();
+	const rawInput = await readInputFile('src/day_one/input.txt');
 
 	const array = getArrayFromLines(rawInput)
 		.map(line => line.trim())
