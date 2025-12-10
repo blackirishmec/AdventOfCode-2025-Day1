@@ -5,6 +5,7 @@ const DIAL_STARTING_VALUE = 50;
 
 // * ------------------------  TYPES  ------------------------ * //
 type SpinDirection = 'left' | 'right';
+type PasswordZeroMode = 'any' | 'final';
 
 // * ------------------------ CLASSES ------------------------ * //
 class SafeDialValue {
@@ -135,7 +136,10 @@ class Counter {
 
 class SafeDial {
 	private _value: SafeDialValue = SafeDialValue.create();
-	private _zeroCounter: Counter = Counter.create();
+	private _zeroCounters: Record<PasswordZeroMode, Counter> = {
+		any: Counter.create(),
+		final: Counter.create(),
+	};
 
 	private constructor() {}
 
@@ -150,12 +154,14 @@ class SafeDial {
 
 			if (nextCounterValue === 100) {
 				updatedValue = 0;
+
+				this.incrementZeroCounterValue('any');
 			} else {
 				updatedValue += 1;
 			}
 		}
 
-		if (updatedValue === 0) this.incrementZeroCounter();
+		if (updatedValue === 0) this.incrementZeroCounterValue('final');
 
 		this._value = SafeDialValue.create(updatedValue);
 	}
@@ -169,10 +175,14 @@ class SafeDial {
 				updatedValue = 99;
 			} else {
 				updatedValue -= 1;
+
+				if (updatedValue === 0) {
+					this.incrementZeroCounterValue('any');
+				}
 			}
 		}
 
-		if (updatedValue === 0) this.incrementZeroCounter();
+		if (updatedValue === 0) this.incrementZeroCounterValue('final');
 
 		this._value = SafeDialValue.create(updatedValue);
 	}
@@ -189,24 +199,30 @@ class SafeDial {
 		return this._value.value;
 	}
 
-	get zeroCounter(): Counter {
-		return this._zeroCounter;
+	get zeroCounters(): Record<PasswordZeroMode, Counter> {
+		return this._zeroCounters;
 	}
 
-	get zeroCounterCurrentValue(): number {
-		return this._zeroCounter.value;
+	private getZeroCounter(passwordZeroMode: PasswordZeroMode): Counter {
+		return this._zeroCounters[passwordZeroMode];
 	}
 
-	private setZeroCounterValue(newValue: number) {
-		this._zeroCounter = Counter.create(newValue);
+	public getZeroCounterValue(passwordZeroMode: PasswordZeroMode): number {
+		return this.getZeroCounter(passwordZeroMode).value;
 	}
 
-	private incrementZeroCounter() {
-		this.setZeroCounterValue(this.zeroCounter.value + 1);
+	private setZeroCounterValue(
+		passwordZeroMode: PasswordZeroMode,
+		newValue: number,
+	) {
+		this._zeroCounters[passwordZeroMode] = Counter.create(newValue);
 	}
 
-	public resetZeroCounter() {
-		this._zeroCounter = Counter.create();
+	private incrementZeroCounterValue(passwordZeroMode: PasswordZeroMode) {
+		this.setZeroCounterValue(
+			passwordZeroMode,
+			this.getZeroCounter(passwordZeroMode).value + 1,
+		);
 	}
 }
 
@@ -219,7 +235,8 @@ const getArrayFromLines = (input: string): string[] => input.split('\n');
 // * ------------------------  MAIN   ------------------------ * //
 const getSafeDoorPassword = async (): Promise<{
 	currentValue: number;
-	zeroCount: number;
+	anyClickPassword: number;
+	finalClickPassword: number;
 }> => {
 	const rawInput = await readInputFile();
 
@@ -237,9 +254,12 @@ const getSafeDoorPassword = async (): Promise<{
 
 	return {
 		currentValue: safeDial.currentValue,
-		zeroCount: safeDial.zeroCounterCurrentValue,
+		finalClickPassword: safeDial.getZeroCounterValue('final'),
+		anyClickPassword: safeDial.getZeroCounterValue('any'),
 	};
 };
 
 const safeDoorPassword = await getSafeDoorPassword();
-console.log(`The password to the door is:`, { safeDoorPassword });
+console.log(`The password to the door is in:`, {
+	safeDoorPassword,
+});
