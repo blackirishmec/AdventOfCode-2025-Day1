@@ -6,6 +6,7 @@
 	"scripts": {
 		"check": "tsc --noEmit",
 		"dev:day-one": "tsx src/day_one/main.ts",
+		"dev:day-two": "tsx src/day_two/main.ts",
 		"test": "vitest"
 	},
 	"repository": {
