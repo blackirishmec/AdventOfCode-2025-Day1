@@ -15,4 +15,4 @@ My first year participating! Planning on taking my time on each day and 'overdoi
 
 ## Day 2:
 
--
+- Emphasis on using `.reduce()` (<3)
